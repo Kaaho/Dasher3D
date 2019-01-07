@@ -38,7 +38,7 @@ public class Hiekka : MonoBehaviour
         //enable every cube next to player
         if ((coordinates - playerto).magnitude == 1)
         {
-            Debug.Log("Enabling sand for " + coordinates);
+            //Debug.Log("Enabling sand for " + coordinates);
             gameObject.GetComponent<EventTrigger>().enabled = true;
         }
         else

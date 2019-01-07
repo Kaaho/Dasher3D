@@ -18,6 +18,18 @@ public class Diamond : MonoBehaviour {
 		
 	}
 
+    void OnEnable()
+    {
+        Game.OnPlayerMoved += EnableCloseToPlayer;
+    }
+
+
+    void OnDisable()
+    {
+        Game.OnPlayerMoved -= EnableCloseToPlayer;
+    }
+
+
     public void MovePlayer()
     {
         //if we are in the same floor, then move player
@@ -27,9 +39,10 @@ public class Diamond : MonoBehaviour {
     }
 
 
-    private void EnableCloseToPlayer(Vector3Int playerto)
+    private void EnableCloseToPlayer()
     {
-        bool nextToPlayer = (coordinates - playerto).magnitude == 1;
+        Vector3Int playercoord = game.GetComponent<Game>().playercoord;
+        bool nextToPlayer = ((coordinates - playercoord).magnitude == 1);
         //enable every cube next to player
         gameObject.GetComponent<EventTrigger>().enabled = nextToPlayer;
     }

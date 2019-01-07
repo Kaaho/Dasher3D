@@ -444,23 +444,29 @@ public class Game : MonoBehaviour
     }
 
     //whenever a stone is moving, it's place must be changed
-    public void StoneMoved(Vector3Int from, Vector3Int to)
+    // returns true, if operation is successful, false if there is something below...
+    public bool StoneMoved(GameObject movedStone, Vector3Int to)
     {
         if (diamonds.Count > 0)
         {
             if (allplaces[to.x, to.y, to.z] == null)
             {
+                Vector3Int from = movedStone.GetComponent<Stone>().coordinates;
                 Debug.Log("Moving stone from: " + from.ToString() + " to: " + to.ToString());
                 smallcubes[from.x, from.y, from.z].transform.GetChild(2).gameObject.SetActive(false);
                 smallcubes[to.x, to.y, to.z].transform.GetChild(2).gameObject.SetActive(true);
                 allplaces[from.x, from.y, from.z] = null;
-                allplaces[to.x, to.y, to.z] = stone;
+                allplaces[to.x, to.y, to.z] = movedStone;
+                movedStone.GetComponent<Stone>().coordinates = to;
+                return true;
             } else
             {
                 //There should not be anything where we want to move the stone!
                 Debug.Log("Should never come here!");
+                return false;
             }
         }
+        return true;
     }
 
     /*    public void DeactivateBase(Vector3Int coord)
@@ -490,15 +496,17 @@ public class Game : MonoBehaviour
         diamonds.Clear();
         foreach (Text it in infoText) it.text = message + "\nGame Over.";
         timerText.text = "";
-        foreach (GameObject go in allplaces) Destroy(go);
-        foreach (GameObject go in smallcubes) Destroy(go);
+        foreach (GameObject go in allplaces) if (go !=null) go.SetActive(false);
+        foreach (GameObject go in smallcubes) go.SetActive(false);
+        downArrow.SetActive(false);
+        upArrow.SetActive(false);
     }
 
     public void YouWon()
     {
         foreach (Text it in infoText) it.text = "Congratulations! \nYou won!";
         timerText.text = "";
-        foreach (GameObject go in allplaces) Destroy(go);
+        foreach (GameObject go in allplaces) if (go != null) go.SetActive(false);
         foreach (GameObject go in smallcubelayers) go.SetActive(false);
         downArrow.SetActive(false);
         upArrow.SetActive(false);
@@ -541,6 +549,7 @@ public class Game : MonoBehaviour
     public bool IsNull(Vector3Int coord)
     {
         if (!IsInsideGameArea(coord)) return false;
+        if (coord.Equals(playercoord)) return false;
         if (allplaces[coord.x, coord.y, coord.z] == null) return true;
         return false;
     }

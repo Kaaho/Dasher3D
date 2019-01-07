@@ -46,7 +46,7 @@ public class Pohja : MonoBehaviour {
             //First floor requires box collider so that the stones don't go through
             gameObject.GetComponent<EventTrigger>().enabled = true;
             if (coordinates.y != 0 ) gameObject.GetComponent<BoxCollider>().enabled = true;
-            Debug.Log("Enabled pohja for " + coordinates.ToString());
+            //Debug.Log("Enabled pohja for " + coordinates.ToString());
         } else
         {
             gameObject.GetComponent<EventTrigger>().enabled = false;

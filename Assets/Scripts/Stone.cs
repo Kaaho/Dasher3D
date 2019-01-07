@@ -23,7 +23,7 @@ public class Stone : MonoBehaviour
         Stone.OnStoneMoved += CheckIfFreeUnder;
         Stone.OnStoneMoved += EnableCloseToPlayer;
         Game.OnPlayerMoved += EnableCloseToPlayer;
-        Game.OnPlayerMoved += IsPlayerCloseToStone;
+        //Game.OnPlayerMoved += IsPlayerCloseToStone;
         Game.OnSandDestroyed += CheckIfFreeUnder;
     }
 
@@ -32,46 +32,55 @@ public class Stone : MonoBehaviour
         Stone.OnStoneMoved -= CheckIfFreeUnder;
         Stone.OnStoneMoved -= EnableCloseToPlayer;
         Game.OnPlayerMoved -= EnableCloseToPlayer;
-        Game.OnPlayerMoved -= IsPlayerCloseToStone;
+        //Game.OnPlayerMoved -= IsPlayerCloseToStone;
         Game.OnSandDestroyed -= CheckIfFreeUnder;
     }
 
     // Update is called once per frame
     void Update()
     {
-        Vector3 lpos = transform.localPosition - new Vector3(0, 0.5f, 0);
-        Vector3Int lposint = new Vector3Int(Mathf.RoundToInt(lpos.x), Mathf.RoundToInt(lpos.y), Mathf.RoundToInt(lpos.z));
-        if (moving & !lposint.Equals(coordinates))
+        //if the stone is moving currently
+        if (moving)
         {
-            StoneHasMoved(lposint);
+            //then check if it has already changed position
+            Vector3 lpos = transform.localPosition - new Vector3(0, 0.5f, 0);
+            Vector3Int lposint = new Vector3Int(Mathf.RoundToInt(lpos.x), Mathf.RoundToInt(lpos.y), Mathf.RoundToInt(lpos.z));
+            if (!lposint.Equals(coordinates))
+            {
+                //and if it has, change the coordinates
+                ChangeStoneCoordinates(lposint, false);
+            }
         }
     }
 
-    private void StoneHasMoved(Vector3Int to)
+    private void ChangeStoneCoordinates(Vector3Int to, bool moveplayer)
     {
+        //The original coordinates
         Vector3Int origcoordinates = coordinates;
-        Debug.Log("StoneHasMoved to: " + to.ToString());
-        coordinates = to;
-        game.GetComponent<Game>().StoneMoved(origcoordinates, to);
+        //tell it also to the game
+        game.GetComponent<Game>().StoneMoved(gameObject, to);
         if (OnStoneMoved != null)
         {
+            //and then to everyone, who cares about it
             OnStoneMoved();
         }
-        game.GetComponent<Game>().MovePlayer(origcoordinates);
+        //if the player pushed the stone, move also the player
+        if (moveplayer) game.GetComponent<Game>().MovePlayer(origcoordinates);
 
     }
 
+    /*
     private void IsPlayerCloseToStone()
     {
-        Vector3Int playerto = game.GetComponent<Game>().playercoord;
+        Vector3Int playercoord = game.GetComponent<Game>().playercoord;
         //if player is below
-        if (coordinates.Equals(playerto + new Vector3Int(0, 1, 0)))
+        if (coordinates.Equals(playercoord + new Vector3Int(0, 1, 0)))
         {
             Debug.Log("Player under stone " + coordinates.ToString());
             UnFreezeStone();
         }
     }
-
+*/
     private void UnFreezeStone()
     {
         /*waiting = true;
@@ -86,13 +95,13 @@ public class Stone : MonoBehaviour
 
     private void EnableCloseToPlayer()
     {
-        Vector3Int playerto = game.GetComponent<Game>().playercoord;
-        bool nextToPlayer = (coordinates - playerto).magnitude == 1;
+        Vector3Int playercoord = game.GetComponent<Game>().playercoord;
+        bool nextToPlayer = (coordinates - playercoord).magnitude == 1;
         if (nextToPlayer)
         {
-            //not possible to move unless null next to
-            Vector3Int isnullnext = coordinates - (playerto - coordinates);
-            gameObject.GetComponent<EventTrigger>().enabled = game.GetComponent<Game>().IsNull(isnullnext);
+            //not possible to move unless null on the other side to
+            Vector3Int nulloppositeplayer = coordinates - (playercoord - coordinates);
+            gameObject.GetComponent<EventTrigger>().enabled = game.GetComponent<Game>().IsNull(nulloppositeplayer);
         }
         else
         {
@@ -126,10 +135,11 @@ public class Stone : MonoBehaviour
     public void MoveStone()
     {
         Vector3Int playercoord = game.GetComponent<Game>().playercoord;
+        //check the coordinates in the other end
         Vector3Int newcoord = coordinates - (playercoord - coordinates);
         transform.localPosition = new Vector3(newcoord.x, 0.475f + newcoord.y, newcoord.z);
         gameObject.GetComponent<EventTrigger>().enabled = false;
-        StoneHasMoved(newcoord);
+        ChangeStoneCoordinates(newcoord, true);
     }
 
 
